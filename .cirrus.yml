@@ -1,58 +1,46 @@
 # .cirrus.yml
-# Main pipeline configuration for Cirrus CI
-
-# Define a Docker Builder task
-docker_builder:
-  only_if: $CIRRUS_TAG != ''  # Only execute on tag creation
-  env:
-    DOCKER_USERNAME: ENCRYPTED[your_docker_username_encrypted]
-    DOCKER_PASSWORD: ENCRYPTED[your_docker_password_encrypted]
-  setup_script:
-    - docker buildx create --name multibuilder  # Set up for multi-architecture builds
-    - docker buildx use multibuilder
-    - docker buildx inspect --bootstrap
-  build_script: |
-    # Build the Docker image with caching
-    docker pull myrepo/foo:latest || true
-    docker buildx build --platform linux/amd64,linux/arm64 \
-      --cache-from myrepo/foo:latest \
-      --tag myrepo/foo:$CIRRUS_TAG \
-      --tag myrepo/foo:latest .
-  login_script: |
-    # Log in to Docker
-    echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USERNAME --password-stdin
-  push_script: |
-    # Push the Docker image to the registry
-    docker push myrepo/foo:$CIRRUS_TAG
-    docker push myrepo/foo:latest
+# Basic pipeline configuration for Cirrus CI using Ubuntu 22.04
 
 # Task for testing
 test_task:
-  docker:
-    image: python:3.9  # Use a Python 3.9 Docker image for testing
+  compute_engine_instance:
+    image_project: cirrus-images
+    image: family/ubuntu-22-04
+    platform: linux
+    cpu: 4
+    memory: 16G
   steps:
     - install_packages:
         script:
-          - pip install -r requirements.txt  # Install dependencies
+          - apt-get update && apt-get install -y python3 python3-pip  # Install Python and pip
+          - pip3 install -r requirements.txt  # Install dependencies
     - run_tests:
         script:
           - pytest tests/  # Run tests in the tests directory
 
 # Task for linting
 lint_task:
-  docker:
-    image: python:3.9  # Use a Python 3.9 Docker image for linting
+  compute_engine_instance:
+    image_project: cirrus-images
+    image: family/ubuntu-22-04
+    platform: linux
+    cpu: 4
+    memory: 16G
   steps:
+    - install_packages:
+        script:
+          - apt-get update && apt-get install -y python3 python3-pip flake8  # Install Python, pip, and flake8
+          - pip3 install -r requirements.txt  # Install dependencies
     - run_lint:
         script:
           - flake8 .  # Run linter on the codebase
 
-# Dependencies for the docker_builder task
-docker_builder:
-  depends_on:
-    - test_task  # Wait for tests to finish successfully
-    - lint_task   # Wait for linting to finish successfully
-
+# Notifications
 notifications:
   email:
     - your_email@example.com  # Add your email for notifications
+
+# Define dependencies for linting and testing
+test_task:
+  depends_on:
+    - lint_task  # Wait for linting to finish successfully before running tests
