@@ -2,7 +2,7 @@
 task:
   build:
     docker:
-      image: python:3.9  # Use Python 3.9 Docker image
+      image: python:3.9  # Use a Python 3.9 Docker image
     steps:
       - install_packages:
           script:
@@ -11,10 +11,10 @@ task:
           script:
             - pytest tests/  # Run tests in the tests directory
 
-  # Optional: Add another task for a different Python version
+  # Optional: Another task for testing with Python 3.8
   test_python_3.8:
     docker:
-      image: python:3.8  # Use Python 3.8 Docker image
+      image: python:3.8  # Use a Python 3.8 Docker image
     steps:
       - install_packages:
           script:
@@ -25,4 +25,4 @@ task:
 
 notifications:
   email:
-    - manjunathbhakthah@gmail.com # Notification email on build status
+    - your_email@example.com  # Add your email for notifications
