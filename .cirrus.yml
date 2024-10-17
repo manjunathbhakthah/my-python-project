@@ -1,8 +1,12 @@
 # .cirrus.yml
+# Main pipeline configuration for Cirrus CI
+
+# Task definitions
 task:
-  build:
+  # Task to run tests
+  test_task:
     docker:
-      image: python:3.9  # Use a Python 3.9 Docker image
+      image: python:3.9  # Use a Python 3.9 Docker image for testing
     steps:
       - install_packages:
           script:
@@ -11,17 +15,43 @@ task:
           script:
             - pytest tests/  # Run tests in the tests directory
 
-  # Optional: Another task for testing with Python 3.8
-  test_python_3.8:
+  # Task to run linting
+  lint_task:
     docker:
-      image: python:3.8  # Use a Python 3.8 Docker image
+      image: python:3.9  # Use a Python 3.9 Docker image for linting
     steps:
-      - install_packages:
+      - run_lint:
           script:
-            - pip install -r requirements.txt  # Install dependencies
-      - run_tests:
-          script:
-            - pytest tests/  # Run tests in the tests directory
+            - flake8 .  # Run linter on the codebase
+
+  # Docker builder task to build and push the Docker image
+  docker_builder:
+    # Only execute this task on tag creation
+    only_if: $CIRRUS_TAG != ''
+    depends_on:
+      - test_task  # Wait for test_task to finish successfully
+      - lint_task   # Wait for lint_task to finish successfully
+    env:
+      DOCKER_USERNAME: ENCRYPTED[your_docker_username_encrypted]
+      DOCKER_PASSWORD: ENCRYPTED[your_docker_password_encrypted]
+    setup_script:
+      - docker buildx create --name multibuilder  # Enable multi-arch builds
+      - docker buildx use multibuilder
+      - docker buildx inspect --bootstrap
+    build_script: |
+      # Pull the latest image for caching
+      docker pull myrepo/foo:latest || true
+      docker buildx build --platform linux/amd64,linux/arm64 \
+        --cache-from myrepo/foo:latest \
+        --tag myrepo/foo:$CIRRUS_TAG \
+        --tag myrepo/foo:latest .
+    login_script: |
+      # Log in to Docker
+      echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USERNAME --password-stdin
+    push_script: |
+      # Push the Docker image to the registry
+      docker push myrepo/foo:$CIRRUS_TAG
+      docker push myrepo/foo:latest
 
 notifications:
   email:
