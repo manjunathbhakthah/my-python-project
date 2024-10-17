@@ -3,12 +3,12 @@
 
 # Task for testing
 test_task:
-  compute_engine_instance:
+  compute_engine_instance:  # Specify the compute engine instance for this task
     image_project: cirrus-images
-    image: family/ubuntu-22-04
+    image: family/ubuntu-22-04  # Use Ubuntu 22.04 image
     platform: linux
-    cpu: 4
-    memory: 16G
+    cpu: 4  # Specify number of CPUs
+    memory: 16G  # Specify memory
   steps:
     - install_packages:
         script:
@@ -20,12 +20,12 @@ test_task:
 
 # Task for linting
 lint_task:
-  compute_engine_instance:
+  compute_engine_instance:  # Specify the compute engine instance for this task
     image_project: cirrus-images
-    image: family/ubuntu-22-04
+    image: family/ubuntu-22-04  # Use Ubuntu 22.04 image
     platform: linux
-    cpu: 4
-    memory: 16G
+    cpu: 4  # Specify number of CPUs
+    memory: 16G  # Specify memory
   steps:
     - install_packages:
         script:
