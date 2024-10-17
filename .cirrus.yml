@@ -1,0 +1,28 @@
+# .cirrus.yml
+task:
+  build:
+    docker:
+      image: python:3.9  # Use Python 3.9 Docker image
+    steps:
+      - install_packages:
+          script:
+            - pip install -r requirements.txt  # Install dependencies
+      - run_tests:
+          script:
+            - pytest tests/  # Run tests in the tests directory
+
+  # Optional: Add another task for a different Python version
+  test_python_3.8:
+    docker:
+      image: python:3.8  # Use Python 3.8 Docker image
+    steps:
+      - install_packages:
+          script:
+            - pip install -r requirements.txt  # Install dependencies
+      - run_tests:
+          script:
+            - pytest tests/  # Run tests in the tests directory
+
+notifications:
+  email:
+    - manjunathbhakthah@gmail.com # Notification email on build status
