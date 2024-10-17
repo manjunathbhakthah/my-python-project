@@ -2,7 +2,7 @@
 task:
   build:
     docker:
-      image: python:3.9  # Use a Python 3.9 Docker image
+      image: python:3.9   # Use a Python 3.9 Docker image
     steps:
       - install_packages:
           script:
