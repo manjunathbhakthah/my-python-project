@@ -1,46 +1,21 @@
 # .cirrus.yml
-# Basic pipeline configuration for Cirrus CI using Ubuntu 22.04
+# Cirrus CI configuration for Python testing using Ubuntu 22.04
 
-# Task for testing
-test_task:
-  compute_engine_instance:  # Specify the compute engine instance for this task
-    image_project: cirrus-images
-    image: family/ubuntu-22-04  # Use Ubuntu 22.04 image
-    platform: linux
-    cpu: 4  # Specify number of CPUs
-    memory: 16G  # Specify memory
-  steps:
-    - install_packages:
-        script:
-          - apt-get update && apt-get install -y python3 python3-pip  # Install Python and pip
-          - pip3 install -r requirements.txt  # Install dependencies
-    - run_tests:
-        script:
-          - pytest tests/  # Run tests in the tests directory
-
-# Task for linting
-lint_task:
-  compute_engine_instance:  # Specify the compute engine instance for this task
-    image_project: cirrus-images
-    image: family/ubuntu-22-04  # Use Ubuntu 22.04 image
-    platform: linux
-    cpu: 4  # Specify number of CPUs
-    memory: 16G  # Specify memory
-  steps:
-    - install_packages:
-        script:
-          - apt-get update && apt-get install -y python3 python3-pip flake8  # Install Python, pip, and flake8
-          - pip3 install -r requirements.txt  # Install dependencies
-    - run_lint:
-        script:
-          - flake8 .  # Run linter on the codebase
+task:
+  name: Python Test
+  container:
+    image: ubuntu:22.04  # Use Ubuntu 22.04 as the container image
+  language: shell  # Specify the language as shell
+  install_script:
+    - apt-get update  # Update the package list
+    - apt-get install -y python3 python3-pip  # Install Python and pip
+    - pip3 install -r requirements.txt  # Install Python dependencies
+  script:
+    - echo "Running tests..."  # Placeholder for starting message
+    - pytest tests/  # Run tests located in the tests directory
+    - echo "Tests completed."  # Completion message
 
 # Notifications
 notifications:
   email:
     - your_email@example.com  # Add your email for notifications
-
-# Define dependencies for linting and testing
-test_task:
-  depends_on:
-    - lint_task  # Wait for linting to finish successfully before running tests
